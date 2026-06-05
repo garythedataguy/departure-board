@@ -51,8 +51,9 @@
   // Auto refresh every 15 seconds (matches board)
   setInterval(() => {
     const iframe = document.getElementById("frame");
-    iframe.src = iframe.src;
-  }, 15000);
+    iframe.src = iframe.src.split('&_ts=')[0] + "&_ts=" + new Date().getTime();
+    //iframe.src = iframe.src;
+  }, 30000);
 </script>
 
 </body>
