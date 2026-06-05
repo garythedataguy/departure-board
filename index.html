@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Departure Board</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow-y: scroll;
+    }
+
+    iframe {
+      width: 100%;
+      height: 13380px; /* adjust if needed */
+      border: none;
+      display: block;
+    }
+
+    .error {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+
+<iframe id="frame"></iframe>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const clusterId = params.get("id");
+
+  if (!clusterId) {
+    document.body.innerHTML = '<div class="error">Missing ClusterID in URL</div>';
+  } else {
+    const baseUrl = "https://publiccentro.rslepi.co.uk/departureboards/DepartureBoard.aspx";
+
+    const fullUrl =
+      baseUrl +
+      "?ClusterID=" + clusterId +
+      "&DepsCount=76" +
+      "&Height=0";
+
+    document.getElementById("frame").src = fullUrl;
+  }
+
+  // Auto refresh every 15 seconds (matches board)
+  setInterval(() => {
+    const iframe = document.getElementById("frame");
+    iframe.src = iframe.src;
+  }, 15000);
+</script>
+
+</body>
+</html>
