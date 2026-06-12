@@ -10,50 +10,94 @@
       margin: 0;
       padding: 0;
       overflow-y: scroll;
+      background: #000;
+    }
+
+    .container {
+      width: 100%;
+      overflow: auto;
     }
 
     iframe {
       width: 100%;
-      height: 15000px; /* adjust if needed */
+      height: 4000px; /* scroll height */
       border: none;
       display: block;
+      transform-origin: top left;
     }
 
-    .error {
+    .loading {
+      color: white;
       font-family: Arial, sans-serif;
-      padding: 20px;
-      color: red;
+      padding: 10px;
     }
   </style>
 </head>
 <body>
 
-<iframe id="frame"></iframe>
+<div class="container">
+  <div class="loading">Loading departure board...</div>
+  <iframe id="frame"></iframe>
+</div>
 
 <script>
   const params = new URLSearchParams(window.location.search);
   const clusterId = params.get("id");
 
+  const iframe = document.getElementById("frame");
+
   if (!clusterId) {
-    document.body.innerHTML = '<div class="error">Missing ClusterID in URL</div>';
+    document.body.innerHTML = "<div class='loading'>Missing ClusterID</div>";
   } else {
     const baseUrl = "https://publiccentro.rslepi.co.uk/departureboards/DepartureBoard.aspx";
 
-    const fullUrl =
-      baseUrl +
-      "?ClusterID=" + clusterId +
-      "&DepsCount=76" +
-      "&Height=0";
+    function buildUrl() {
+      return baseUrl +
+        "?ClusterID=" + clusterId +
+        "&DepsCount=60" +
+        "&refreshInterval=15" +
+        "&Height=0" +
+        "&_ts=" + new Date().getTime(); // cache-bust
+    }
 
-    document.getElementById("frame").src = fullUrl;
+    function loadBoard() {
+      iframe.src = buildUrl();
+    }
+
+    // ✅ Smart scaling based on device + orientation
+    function scaleIframe() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      let scale = 1;
+
+      if (width < 500) {
+        scale = 1.35; // small phones
+      } else if (width < 900) {
+        scale = 1.15; // tablets
+      } else {
+        scale = 1; // desktop
+      }
+
+      // portrait boost
+      if (height > width) {
+        scale += 0.1;
+      }
+
+      iframe.style.transform = "scale(" + scale + ")";
+      iframe.style.width = (100 / scale) + "%";
+    }
+
+    // initial load
+    loadBoard();
+    scaleIframe();
+
+    // refresh every 20s (less aggressive = more reliable)
+    setInterval(loadBoard, 20000);
+
+    // re-scale on resize / rotation
+    window.addEventListener("resize", scaleIframe);
   }
-
-  // Auto refresh every 15 seconds (matches board)
-  setInterval(() => {
-    const iframe = document.getElementById("frame");
-    iframe.src = iframe.src.split('&_ts=')[0] + "&_ts=" + new Date().getTime();
-    //iframe.src = iframe.src;
-  }, 30000);
 </script>
 
 </body>
